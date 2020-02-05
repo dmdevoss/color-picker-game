@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 void main() => runApp(Locor());
 
@@ -256,6 +257,14 @@ class FancyPickerPage extends StatefulWidget {
 
 class _FancyPickerPageState extends State<FancyPickerPage> {
 
+  Color _pickerColor = Color(0xff443a49);
+//  Color pickerColor = Color(0xff443a49);
+//  Color currentColor = Color(0xff443a49);
+
+  void changeColor(Color color) {
+    setState(() => _pickerColor = color);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -273,7 +282,13 @@ class _FancyPickerPageState extends State<FancyPickerPage> {
                       style: TextStyle(
                           fontSize: 20
                       )
-                  )
+                  ),
+                  ColorPicker(
+                    pickerColor: _pickerColor,
+                    onColorChanged: changeColor,
+                    enableLabel: true,
+                    pickerAreaHeightPercent: 0.8,
+                  ),
                 ]
             )
         )
