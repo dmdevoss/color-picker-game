@@ -63,7 +63,7 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 1, title: "Normal Mode")),
+                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 1, title: "Normal Mode"), fullscreenDialog: true),
                 );
               },
             ),
@@ -72,7 +72,7 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 2, title: "Hard Mode")),
+                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 2, title: "Hard Mode"), fullscreenDialog: true),
                 );
               },
             ),
@@ -81,7 +81,7 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 3, title: "Impossible Mode")),
+                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 3, title: "Impossible Mode"), fullscreenDialog: true),
                 );
               },
             )
@@ -97,6 +97,7 @@ class ColorPickerPage extends StatefulWidget {
 
   final int difficulty;
   final String title;
+
 
 
   @override
@@ -121,6 +122,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
   int _goalRed = 0;
   String _scoreText = "";
   Color _goalColor = Color((math.Random().nextDouble() * 0xFFFFFF).toInt() << 0).withOpacity(1.0);
+
 
   void _checkColors() {
     setState(() {
