@@ -233,6 +233,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
 
     if(_score > 0) {
       _scoreText = "";
+      _scoreTextTitle = "";
     } else {
       _scoreText = "Recreate the circle's top color using the RGB sliders.";
     }
@@ -271,7 +272,6 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
     _loseMode = false;
 
     if(_timeAttackMode) {
-      _topText = "Go!";
       _startNewTimer();
     } else {
       _startNewStopwatch();
@@ -361,6 +361,17 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
       else return _timeElapsed.inSeconds.toString();
     }
   }
+  String _getDoneButtonText(){
+    if(_timeAttackMode) {
+      return "Restart";
+    } else {
+      if(_winMode || _loseMode) {
+        return "Try Again?";
+      } else {
+        return "Submit";
+      }
+    }
+  }
 
   // Destroy the timers when you leave the page
   @override
@@ -391,7 +402,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             SizedBox(
-              height: 100,
+              height: 70,
               child: Text(
                   _getTimeDisplay(),
                   style: TextStyle(
@@ -400,7 +411,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
               ),
             ),
             SizedBox(
-              height: 50,
+              height: 30,
               child: Text(
                   "$_scoreTextTitle",
                   style: TextStyle(
@@ -409,7 +420,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
               ),
             ),
             SizedBox(
-              height: 50,
+              height: 20,
               child: Text(
                   "$_scoreText",
                   style: TextStyle(
@@ -506,13 +517,12 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
                   });
                 }
             ),
+            HomepageButton(
+                onPressed: _doneButtonPressed,
+                buttonText: _getDoneButtonText()
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _doneButtonPressed,
-        tooltip: 'Done',
-        child: Icon(Icons.done),
       ),
     );
   }
@@ -528,7 +538,7 @@ class FancyPickerPage extends StatefulWidget {
 
 class _FancyPickerPageState extends State<FancyPickerPage> {
 
-  Color _pickerColor = Color(0xff443a49);
+  Color _pickerColor = Color.fromRGBO(245, 72, 6, 1.0);
 
   void changeColor(Color color) {
     setState(() => _pickerColor = color);
@@ -546,10 +556,10 @@ class _FancyPickerPageState extends State<FancyPickerPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                      "Fine...",
+                      "“The soul becomes dyed with the color of its thoughts.” ~Marcus Aurelius.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 20
+                          fontSize: 15
                       )
                   ),
                   ColorPicker(
