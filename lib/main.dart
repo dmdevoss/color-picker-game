@@ -59,7 +59,8 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                     MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 1, title: "Normal Mode"), fullscreenDialog: true),
                   );
                 },
-                buttonText: 'NORMAL'
+                buttonText: 'NORMAL',
+                altColor: true,
             ),
             HomepageButton(
                 onPressed: () {
@@ -68,7 +69,8 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                     MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 2, title: "Hard Mode"), fullscreenDialog: true),
                   );
                 },
-                buttonText: 'HARD'
+                buttonText: 'HARD',
+              altColor: true,
             ),
             HomepageButton(
                 onPressed: () {
@@ -77,7 +79,8 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                     MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 3, title: "Impossible Mode"), fullscreenDialog: true),
                   );
                 },
-                buttonText: 'IMPOSSIBLE'
+                buttonText: 'IMPOSSIBLE',
+                altColor: true,
             ),
             Divider(),
             HomepageButton(
@@ -87,7 +90,8 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                     MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 0, title: "Time Attack"), fullscreenDialog: true),
                   );
                 },
-                buttonText: 'TIME ATTACK'
+                buttonText: 'TIME ATTACK',
+                altColor: true,
             ),
             HomepageButton(
                 onPressed: () {
@@ -96,7 +100,8 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                     MaterialPageRoute(builder: (context) => FancyPickerPage()),
                   );
                 },
-                buttonText: 'ZEN MODE'
+                buttonText: 'ZEN MODE',
+                altColor: true,
             ),
           ]
         )
@@ -538,7 +543,7 @@ class FancyPickerPage extends StatefulWidget {
 
 class _FancyPickerPageState extends State<FancyPickerPage> {
 
-  Color _pickerColor = Color.fromRGBO(245, 72, 6, 1.0);
+  Color _pickerColor = Colors.deepOrange;
 
   void changeColor(Color color) {
     setState(() => _pickerColor = color);
