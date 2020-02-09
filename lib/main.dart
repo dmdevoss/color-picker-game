@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:locor/locor_widgets/homepage_button.dart';
 
@@ -50,15 +51,7 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                   fontSize: 20
               )
             ),
-            HomepageButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FancyPickerPage()),
-                  );
-                },
-                buttonText: 'NO'
-            ),
+            Divider(),
             HomepageButton(
                 onPressed: () {
                   Navigator.push(
@@ -86,6 +79,25 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                 },
                 buttonText: 'IMPOSSIBLE'
             ),
+            Divider(),
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 0, title: "Time Attack"), fullscreenDialog: true),
+                  );
+                },
+                buttonText: 'TIME ATTACK'
+            ),
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FancyPickerPage()),
+                  );
+                },
+                buttonText: 'ZEN MODE'
+            ),
           ]
         )
       )
@@ -108,20 +120,42 @@ class ColorPickerPage extends StatefulWidget {
 
 
 class _ColorPickerPageState extends State<ColorPickerPage> {
+
+  // constants
+  final int timerMax = 20;
+
+  // Current Slider Values
   int _green = 0;
   int _blue = 0;
   int _red = 0;
-  double _score = 0;
-  int _incorrectColorPoints = 0;
-  int _difficulty = 0;
-  int _sliderDivisions = 0;
   Color _creation = Color.fromRGBO(0, 0, 0, 1.0);
 
-  // Generate a random Color
+  // Game variables
+  int _streak = 0;
+  int _topStreak = 0;
+  int _bestTime = 0;
+  double _score = 0;
+  double _topScore = 0;
+  int _incorrectColorPoints = 0;
+  int _difficulty = -1;
+  int _sliderDivisions = 0;
+  bool _winMode = false;
+  bool _loseMode = false;
+  bool _timeAttackMode = false;
+  int _timeRemaining;
+  Timer _countdown;
+  Stopwatch _stopwatch = new Stopwatch();
+  Timer _stopwatchTimer;
+  Duration _timeElapsed;
+
+  String _topText = "";
+  String _scoreText = "Recreate the color below using the RGB sliders below.";
+  String _scoreTextTitle = "Game Time";
+
+  // Current randomly generated goal color
   int _goalGreen = 0;
   int _goalBlue = 0;
   int _goalRed = 0;
-  String _scoreText = "";
   Color _goalColor = Color((math.Random().nextDouble() * 0xFFFFFF).toInt() << 0).withOpacity(1.0);
 
 
@@ -132,12 +166,64 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
       _score = (1 - (_incorrectColorPoints / 750)) * 100;
 
       if(_score == 100) {
-        _scoreText = "BOOM! You win.";
+        _playerWin();
       } else {
-        _scoreText = 'Nice try! You got $_incorrectColorPoints points off, for a score of ' + _score.round().toString() + '%.';
-        _generateNewGoal();
+        if(_timeAttackMode) {
+          // Do nothing, the color is always being checked in time attack.
+        } else {
+          _playerLose();
+        }
       }
 
+    });
+  }
+
+  void _playerWin() {
+    setState(() {
+      _streak = _streak + 1;
+      _stopwatch.stop();
+      _topText = "Excellent!";
+
+      if(_timeAttackMode) {
+        _generateNewGoal();
+      } else {
+        var timeScore = _stopwatch.elapsed.inSeconds;
+        _topScore = 100;
+
+        if(timeScore < _bestTime || _bestTime == 0) {
+          _bestTime = timeScore;
+          _scoreTextTitle = "Personal Best!";
+        } else {
+          _scoreTextTitle = "You can do better! ";
+        }
+        _scoreText = 'You won in $timeScore seconds.';
+        _winMode = true;
+      }
+    });
+  }
+
+  void _playerLose() {
+    setState(() {
+      _loseMode = true;
+      if(_timeAttackMode) {
+        if(_streak > _topStreak) {
+          _topStreak = _streak;
+          _scoreTextTitle = "Personal Best!";
+          _scoreText = 'You were on a $_streak game hot streak.';
+        } else {
+          _scoreTextTitle = "You can do better! ";
+          _scoreText = 'You were on a streak of $_streak.';
+        }
+      } else {
+        if(_score > _topScore) {
+          _topScore = _score;
+          _scoreTextTitle = "Personal Best!";
+        } else {
+          _scoreTextTitle = "You can do better! ";
+        }
+        _scoreText = 'You got $_incorrectColorPoints points off, for a score of ' + _score.round().toString() + '%.';
+      }
+      _streak = 0;
     });
   }
 
@@ -145,7 +231,20 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
 
     _difficulty = widget.difficulty ?? 1;
 
+    if(_score > 0) {
+      _scoreText = "";
+    } else {
+      _scoreText = "Recreate the circle's top color using the RGB sliders.";
+    }
+
     switch(_difficulty) {
+      case 0:
+        _timeAttackMode = true;
+        _sliderDivisions = 5;
+        _goalGreen = (math.Random().nextInt(250) / 50).round() * 50;
+        _goalBlue = (math.Random().nextInt(250) / 50).round() * 50;
+        _goalRed = (math.Random().nextInt(250) / 50).round() * 50;
+        break;
       case 1:
         _sliderDivisions = 10;
         _goalGreen = (math.Random().nextInt(250) / 25).round() * 25;
@@ -168,30 +267,199 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
     }
     // Generate a new random Color
     _goalColor = Color.fromRGBO(_goalRed, _goalGreen, _goalBlue, 1.0);
+    _winMode = false;
+    _loseMode = false;
+
+    if(_timeAttackMode) {
+      _topText = "Go!";
+      _startNewTimer();
+    } else {
+      _startNewStopwatch();
+    }
+  }
+
+  void _startNewStopwatch() {
+
+    _stopwatch.reset();
+    _stopwatch.start();
+
+    if(_stopwatchTimer != null) _stopwatchTimer.cancel();
+
+    _stopwatchTimer = Timer.periodic(
+        Duration(seconds: 1),
+            (timer) => setState(
+                () {
+              if(_loseMode || _winMode) {
+                _stopwatchTimer.cancel();
+                _stopwatch.stop();
+              } else {
+                _timeElapsed = _stopwatch.elapsed;
+              }
+            }
+        )
+    );
+  }
+
+  void _startNewTimer() {
+    _timeRemaining = this.timerMax;
+    if(_countdown != null) _countdown.cancel();
+    _countdown = Timer.periodic(
+        Duration(seconds: 1),
+            (timer) => setState(
+                () {
+              _timeRemaining = _timeRemaining - 1;
+              if(this.timerMax - _timeRemaining == 2) {
+                _topText = "";
+              }
+              if(_timeRemaining < 1) {
+                _countdownExpired();
+              }
+            }
+        )
+    );
+  }
+
+  void _countdownExpired() {
+    _countdown.cancel();
+    _playerLose();
+  }
+
+  void _doneButtonPressed() {
+    if(_timeAttackMode || _winMode || _loseMode) {
+      _generateNewGoal();
+    } else {
+      _checkColors();
+    }
+  }
+
+  void _updateCreation()  {
+    setState(() {
+      _creation = Color.fromRGBO(_red, _green, _blue, 1.0);
+      if(_timeAttackMode) {
+        _checkColors();
+      }
+    });
+  }
+
+  String _getTitle() {
+      if(_winMode) {
+        return "You Win!";
+      } else if (_loseMode) {
+        return "Game Over.";
+      } else if(_streak > 0) {
+        return "Hot Streak: $_streak";
+      } else {
+        return widget.title ?? "Color Picker: The Game";
+      }
+  }
+
+  String _getTimeDisplay(){
+    if(_timeAttackMode) {
+      return _timeRemaining.toString();
+    } else {
+      if(_timeElapsed == null) return "0";
+      else return _timeElapsed.inSeconds.toString();
+    }
+  }
+
+  // Destroy the timers when you leave the page
+  @override
+  void dispose() {
+    if(_countdown != null) _countdown.cancel();
+    if(_stopwatchTimer != null) _stopwatchTimer.cancel();
+    if(_stopwatch != null) {
+      _stopwatch.stop();
+      _stopwatch.reset();
+    }
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    if(_difficulty == 0) {
+    if(_difficulty == -1) {
       _generateNewGoal();
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title ??  "Color Picker: The Game"),
+        title: Text(_getTitle()),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'Recreate the color below using the RGB sliders below.'
+            SizedBox(
+              height: 100,
+              child: Text(
+                  _getTimeDisplay(),
+                  style: TextStyle(
+                    fontSize: 30,
+                  )
+              ),
             ),
-            Container(height: 150, color: _goalColor),
-            Container(height: 150, color: _creation),
-            Text(
-              _scoreText,
+            SizedBox(
+              height: 50,
+              child: Text(
+                  "$_scoreTextTitle",
+                  style: TextStyle(
+                    fontSize: 20,
+                  )
+              ),
+            ),
+            SizedBox(
+              height: 50,
+              child: Text(
+                  "$_scoreText",
+                  style: TextStyle(
+                    fontSize: 15,
+                  )
+              ),
+            ),
+            Divider(),
+            Container(
+                height: 150,
+                width: 300,
+                decoration: new BoxDecoration(
+                    color: _goalColor,
+                    borderRadius: new BorderRadius.only(
+                        topLeft:  const  Radius.circular(150.0),
+                        topRight: const  Radius.circular(150.0)
+                    )
+                ),
+                child:  Center(
+                  child: Text(
+                    "$_topText",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      shadows: <Shadow>[
+                        Shadow(
+                          offset: Offset(3.0, 3.0),
+                          blurRadius: 3.0,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                        Shadow(
+                          offset: Offset(3.0, 3.0),
+                          blurRadius: 8.0,
+                          color: Color.fromARGB(125, 0, 0, 255),
+                        ),
+                      ],
+                    ),
+                ),
+              ),
+            ),
+            Container(
+                height: 150,
+                width: 300,
+                decoration: new BoxDecoration(
+                    color: _creation,
+                    borderRadius: new BorderRadius.only(
+                        bottomLeft:  const  Radius.circular(150.0),
+                        bottomRight: const  Radius.circular(150.0)
+                    )
+                ),
             ),
             Slider(
                 value: _red.toDouble(),
@@ -204,7 +472,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
                 onChanged: (double newValue) {
                   setState(() {
                     _red = newValue.round();
-                    _creation = Color.fromRGBO(_red, _green, _blue, 1.0);
+                    _updateCreation();
                   });
                 }
             ),
@@ -219,7 +487,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
                 onChanged: (double newValue) {
                   setState(() {
                     _blue = newValue.round();
-                    _creation = Color.fromRGBO(_red, _green, _blue, 1.0);
+                    _updateCreation();
                   });
                 }
             ),
@@ -234,7 +502,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
                 onChanged: (double newValue) {
                   setState(() {
                     _green = newValue.round();
-                    _creation = Color.fromRGBO(_red, _green, _blue, 1.0);
+                    _updateCreation();
                   });
                 }
             ),
@@ -242,10 +510,10 @@ class _ColorPickerPageState extends State<ColorPickerPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _checkColors,
+        onPressed: _doneButtonPressed,
         tooltip: 'Done',
         child: Icon(Icons.done),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
@@ -261,8 +529,6 @@ class FancyPickerPage extends StatefulWidget {
 class _FancyPickerPageState extends State<FancyPickerPage> {
 
   Color _pickerColor = Color(0xff443a49);
-//  Color pickerColor = Color(0xff443a49);
-//  Color currentColor = Color(0xff443a49);
 
   void changeColor(Color color) {
     setState(() => _pickerColor = color);
