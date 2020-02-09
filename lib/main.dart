@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:locor/locor_widgets/homepage_button.dart';
 
 void main() => runApp(Locor());
 
@@ -49,42 +50,42 @@ class _LevelSelectPageState extends State<LevelSelectPage> {
                   fontSize: 20
               )
             ),
-            RaisedButton(
-              child: Text('No'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FancyPickerPage()),
-                );
-              },
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FancyPickerPage()),
+                  );
+                },
+                buttonText: 'NO'
             ),
-            RaisedButton(
-              child: Text('Normal'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 1, title: "Normal Mode"), fullscreenDialog: true),
-                );
-              },
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 1, title: "Normal Mode"), fullscreenDialog: true),
+                  );
+                },
+                buttonText: 'NORMAL'
             ),
-            RaisedButton(
-              child: Text('Hard'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 2, title: "Hard Mode"), fullscreenDialog: true),
-                );
-              },
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 2, title: "Hard Mode"), fullscreenDialog: true),
+                  );
+                },
+                buttonText: 'HARD'
             ),
-            RaisedButton(
-              child: Text('Impossible'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 3, title: "Impossible Mode"), fullscreenDialog: true),
-                );
-              },
-            )
+            HomepageButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ColorPickerPage(difficulty: 3, title: "Impossible Mode"), fullscreenDialog: true),
+                  );
+                },
+                buttonText: 'IMPOSSIBLE'
+            ),
           ]
         )
       )
